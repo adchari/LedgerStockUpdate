@@ -26,20 +26,24 @@ func main() {
 	defer pricedb.Close()
 
 	for _, c := range commodities {
-		pricedb.WriteString("P " + GetTimeString() + " " + c + " " + GetPriceString(c) + "\n")
+		priceString, err := GetPriceString(c)
+		if err != nil {
+			continue
+		}
+		pricedb.WriteString("P " + GetTimeString() + " " + c + " " + priceString + "\n")
 	}
 }
 
-func GetPriceString(ticker string) string {
+func GetPriceString(ticker string) (string, error) {
 	resp, err := http.Get("https://api.worldtradingdata.com/api/v1/stock?symbol=" + ticker + "&api_token=zkyqseprRGFE2qN0sck4QiFcmyw0kJirCeXKYcXpGM80FEBmitI03aLT31RJ")
 	if err != nil {
-		log.Fatalf("Price request of ticker %s failed with %s\n", ticker, err)
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Price read of ticker %s failed with %s\n", ticker, err)
+		return "", err
 	}
 
 	var f interface{}
@@ -51,7 +55,7 @@ func GetPriceString(ticker string) string {
 	ma := elem.(map[string]interface{})
 	priceInterface := ma["price"]
 	price := priceInterface.(string)
-	return "$" + price
+	return "$" + price, nil
 }
 
 func GetTimeString() string {
