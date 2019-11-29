@@ -34,7 +34,7 @@ func main() {
 	}
 }
 
-func GetPriceString(ticker string) string {
+func GetPriceString(ticker string) (string, error) {
 	resp, err := http.Get("https://api.worldtradingdata.com/api/v1/stock?symbol=" + ticker + "&api_token=demo")
 	if err != nil {
 		return "", err
