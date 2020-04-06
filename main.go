@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+    apiToken := flag.String("a", "demo", "World Trading Data API Token")
 	ledgerBinary := flag.String("b", "ledger", "Ledger Binary")
 	ledgerFile := flag.String("f", "ledger.ledger", "Ledger File")
 	priceDbFile := flag.String("p", "prices.db", "Price Database File")
@@ -27,7 +28,7 @@ func main() {
 	defer pricedb.Close()
 
 	for _, c := range commodities {
-		priceString, err := GetPriceString(c)
+		priceString, err := GetPriceString(c, *apiToken)
 		if err != nil {
 			continue
 		}
@@ -35,8 +36,8 @@ func main() {
 	}
 }
 
-func GetPriceString(ticker string) (string, error) {
-	resp, err := http.Get("https://api.worldtradingdata.com/api/v1/stock?symbol=" + ticker + "&api_token=demo")
+func GetPriceString(ticker string, apiToken string) (string, error) {
+	resp, err := http.Get("https://api.worldtradingdata.com/api/v1/stock?symbol=" + ticker + "&api_token=" + apiToken)
 	if err != nil {
 		return "", err
 	}
