@@ -13,11 +13,12 @@ import (
 )
 
 func main() {
+	ledgerBinary := flag.String("b", "ledger", "Ledger Binary")
 	ledgerFile := flag.String("f", "ledger.ledger", "Ledger File")
 	priceDbFile := flag.String("p", "prices.db", "Price Database File")
 	flag.Parse()
 
-	commodities := GetCommodities(*ledgerFile)
+	commodities := GetCommodities(*ledgerFile, *ledgerBinary)
 
 	pricedb, err := os.OpenFile(*priceDbFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -62,8 +63,8 @@ func GetTimeString() string {
 	return time.Now().Format("2006-01-02 15:04:05")
 }
 
-func GetCommodities(ledger string) []string {
-	cmd := exec.Command("ledger", "-f", ledger, "commodities")
+func GetCommodities(ledger string, binary string) []string {
+	cmd := exec.Command(binary, "-f", ledger, "commodities")
 	out, err := cmd.Output()
 	if err != nil {
 		log.Fatalf("Ledger file commodity report failed with %s\n", err)
