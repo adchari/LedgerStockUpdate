@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -13,7 +14,7 @@ import (
 )
 
 func main() {
-    apiToken := flag.String("a", "demo", "World Trading Data API Token")
+	apiToken := flag.String("a", "demo", "World Trading Data API Token")
 	ledgerBinary := flag.String("b", "ledger", "Ledger Binary")
 	ledgerFile := flag.String("f", "ledger.ledger", "Ledger File")
 	priceDbFile := flag.String("p", "prices.db", "Price Database File")
@@ -30,6 +31,7 @@ func main() {
 	for _, c := range commodities {
 		priceString, err := GetPriceString(c, *apiToken)
 		if err != nil {
+			log.Println("Skipped " + c)
 			continue
 		}
 		pricedb.WriteString("P " + GetTimeString() + " " + c + " " + priceString + "\n")
@@ -50,13 +52,25 @@ func GetPriceString(ticker string, apiToken string) (string, error) {
 
 	var f interface{}
 	json.Unmarshal(body, &f)
-	m := f.(map[string]interface{})
+	m, ok := f.(map[string]interface{})
+	if !ok {
+		return "", errors.New("Conversion Error")
+	}
 	dataInterface := m["data"]
-	arr := dataInterface.([]interface{})
+	arr, ok := dataInterface.([]interface{})
+	if !ok {
+		return "", errors.New("Conversion Error")
+	}
 	elem := arr[0]
-	ma := elem.(map[string]interface{})
+	ma, ok := elem.(map[string]interface{})
+	if !ok {
+		return "", errors.New("Conversion Error")
+	}
 	priceInterface := ma["price"]
-	price := priceInterface.(string)
+	price, ok := priceInterface.(string)
+	if !ok {
+		return "", errors.New("Conversion Error")
+	}
 	return "$" + price, nil
 }
 
