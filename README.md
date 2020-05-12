@@ -7,7 +7,7 @@ This application locates any stocks you have in your [ledger-cli](ledger-cli.org
 Build the go file, and run as follows:
 
 ```bash
-./[name of executable] -f=[ledger file] -p=[price database file (to create or update)]
+./[name of executable] -f=[ledger file] -p=[price database file (to create or update)] -a=[Alpha Vantage API token] -b=[Name of ledger binary]
 ```
 
 This should spit out a price database file, which can then be used to calculate the market value in ledger as follows:

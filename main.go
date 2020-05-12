@@ -13,8 +13,14 @@ import (
 	"time"
 )
 
+type Quote struct {
+	Data struct {
+		Price string `json:"05. price"`
+	} `json:"Global Quote"`
+}
+
 func main() {
-	apiToken := flag.String("a", "demo", "World Trading Data API Token")
+	apiToken := flag.String("a", "demo", "Alpha Vantage API Token")
 	ledgerBinary := flag.String("b", "ledger", "Ledger Binary")
 	ledgerFile := flag.String("f", "ledger.ledger", "Ledger File")
 	priceDbFile := flag.String("p", "prices.db", "Price Database File")
@@ -28,18 +34,28 @@ func main() {
 	}
 	defer pricedb.Close()
 
-	for _, c := range commodities {
+	start := time.Now()
+	for i, c := range commodities {
+		if i%5 == 0 {
+			elapsed := time.Now().Sub(start)
+			if elapsed < time.Minute {
+				time.Sleep(time.Minute - elapsed)
+			}
+			start = time.Now()
+		}
+
 		priceString, err := GetPriceString(c, *apiToken)
 		if err != nil {
 			log.Println("Skipped " + c)
 			continue
 		}
-		pricedb.WriteString("P " + GetTimeString() + " " + c + " " + priceString + "\n")
+		pricedb.WriteString("P " + GetTimeString() + " " + c + " " + priceString[:len(priceString)-2] + "\n")
 	}
+	log.Println("Stock price update complete")
 }
 
 func GetPriceString(ticker string, apiToken string) (string, error) {
-	resp, err := http.Get("https://api.worldtradingdata.com/api/v1/stock?symbol=" + ticker + "&api_token=" + apiToken)
+	resp, err := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + ticker + "&apikey=" + apiToken)
 	if err != nil {
 		return "", err
 	}
@@ -50,28 +66,16 @@ func GetPriceString(ticker string, apiToken string) (string, error) {
 		return "", err
 	}
 
-	var f interface{}
-	json.Unmarshal(body, &f)
-	m, ok := f.(map[string]interface{})
-	if !ok {
+	var f Quote
+	err = json.Unmarshal(body, &f)
+	if err != nil {
+		return "", err
+	}
+
+	if f.Data.Price == "" {
 		return "", errors.New("Conversion Error")
 	}
-	dataInterface := m["data"]
-	arr, ok := dataInterface.([]interface{})
-	if !ok {
-		return "", errors.New("Conversion Error")
-	}
-	elem := arr[0]
-	ma, ok := elem.(map[string]interface{})
-	if !ok {
-		return "", errors.New("Conversion Error")
-	}
-	priceInterface := ma["price"]
-	price, ok := priceInterface.(string)
-	if !ok {
-		return "", errors.New("Conversion Error")
-	}
-	return "$" + price, nil
+	return "$" + f.Data.Price, nil
 }
 
 func GetTimeString() string {
