@@ -93,6 +93,7 @@ func GetCommodities(ledger string, binary string) []string {
 
 	commodities := make([]string, 0)
 	for _, e := range sliceOut {
+		e = strings.Trim(e, `"`)
 		if IsTicker(e) {
 			commodities = append(commodities, e)
 		}
@@ -102,7 +103,7 @@ func GetCommodities(ledger string, binary string) []string {
 
 func IsTicker(s string) bool {
 	for _, e := range s {
-		if (e < 'A' || e > 'Z') && (e < '0' || e > '9') {
+		if (e < 'A' || e > 'Z') && (e < '0' || e > '9') && e != '.' {
 			return false
 		}
 	}
