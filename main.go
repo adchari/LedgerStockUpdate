@@ -36,9 +36,10 @@ func main() {
 
 	start := time.Now()
 	for i, c := range commodities {
-		if i%5 == 0 {
+		if i+1%5 == 0 {
 			elapsed := time.Now().Sub(start)
 			if elapsed < time.Minute {
+				log.Println("Sleeping because of API limit")
 				time.Sleep(time.Minute - elapsed)
 			}
 			start = time.Now()
