@@ -1,5 +1,7 @@
 # LedgerStockUpdate
 
+This repository has been archived, please refer to the [SourceHut page](https://git.sr.ht/~adchari/LedgerStockUpdate)
+
 This application locates any stocks you have in your [ledger-cli](https://ledger-cli.org) file, then generates a price database of those stocks compatible with the application.
 
 ### Usage
